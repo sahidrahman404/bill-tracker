@@ -35,6 +35,7 @@ enum MainMenu {
     AddBill,
     ViewBill,
     RemoveBill,
+    Update,
 }
 
 impl MainMenu {
@@ -43,6 +44,7 @@ impl MainMenu {
             "1" => Some(Self::AddBill),
             "2" => Some(Self::ViewBill),
             "3" => Some(Self::RemoveBill),
+            "4" => Some(Self::Update),
             _ => None,
         }
     }
@@ -52,6 +54,7 @@ impl MainMenu {
         println!("1. Add Bill");
         println!("2. View Bills");
         println!("3. Remove Bills");
+        println!("4. Update");
         println!("");
         println!("Enter Selection: ");
     }
@@ -84,6 +87,16 @@ impl Bills {
 
     fn remove(&mut self, name: &str) -> bool {
         self.inner.remove(name).is_some()
+    }
+
+    fn update(&mut self, name: &str, amount: f64) -> bool {
+        match self.inner.get_mut(name) {
+            Some(bill) => {
+                bill.amount = amount;
+                true
+            }
+            None => false,
+        }
     }
 }
 
@@ -124,6 +137,27 @@ mod menu {
             println!("bill not found");
         };
     }
+
+    pub fn update_bills(bill: &mut Bills) {
+        for bill in bill.get_all() {
+            println!("{:?}", bill)
+        }
+        println!("Enter bill name to update");
+        let name = match get_input() {
+            Some(input) => input,
+            None => return,
+        };
+        println!("Enter bill amount to update");
+        let amount = match get_bill_amount() {
+            Some(amount) => amount,
+            None => return,
+        };
+        if bill.update(&name, amount) {
+            println!("bill updated");
+        } else {
+            println!("bill not found");
+        };
+    }
 }
 
 fn main() {
@@ -138,6 +172,7 @@ fn main() {
             Some(MainMenu::AddBill) => menu::add_bill(&mut bills),
             Some(MainMenu::ViewBill) => menu::view_bills(&bills),
             Some(MainMenu::RemoveBill) => menu::remove_bills(&mut bills),
+            Some(MainMenu::Update) => menu::update_bills(&mut bills),
             None => return,
         }
         // Make a choice, based on user input
