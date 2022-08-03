@@ -1,4 +1,4 @@
-use std::io;
+use std::{collections::HashMap, io};
 
 fn get_input() -> Option<String> {
     let mut buffer = String::new();
@@ -34,6 +34,7 @@ pub fn get_bill_amount() -> Option<f64> {
 enum MainMenu {
     AddBill,
     ViewBill,
+    RemoveBill,
 }
 
 impl MainMenu {
@@ -41,6 +42,7 @@ impl MainMenu {
         match input.as_str() {
             "1" => Some(Self::AddBill),
             "2" => Some(Self::ViewBill),
+            "3" => Some(Self::RemoveBill),
             _ => None,
         }
     }
@@ -49,6 +51,7 @@ impl MainMenu {
         println!("== Bill Manager ==");
         println!("1. Add Bill");
         println!("2. View Bills");
+        println!("3. Remove Bills");
         println!("");
         println!("Enter Selection: ");
     }
@@ -61,20 +64,26 @@ pub struct Bill {
 }
 
 pub struct Bills {
-    inner: Vec<Bill>,
+    inner: HashMap<String, Bill>,
 }
 
 impl Bills {
     fn new() -> Self {
-        Self { inner: vec![] }
+        Self {
+            inner: HashMap::new(),
+        }
     }
 
     fn add(&mut self, bill: Bill) {
-        self.inner.push(bill);
+        self.inner.insert(bill.name.to_string(), bill);
     }
 
     fn get_all(&self) -> Vec<&Bill> {
-        self.inner.iter().collect()
+        self.inner.values().collect()
+    }
+
+    fn remove(&mut self, name: &str) -> bool {
+        self.inner.remove(name).is_some()
     }
 }
 
@@ -99,6 +108,22 @@ mod menu {
             println!("{:?}", bill)
         }
     }
+
+    pub fn remove_bills(bill: &mut Bills) {
+        for bill in bill.get_all() {
+            println!("{:?}", bill)
+        }
+        println!("Enter bill name to remove");
+        let name = match get_input() {
+            Some(input) => input,
+            None => return,
+        };
+        if bill.remove(&name) {
+            println!("bill removed");
+        } else {
+            println!("bill not found");
+        };
+    }
 }
 
 fn main() {
@@ -112,6 +137,7 @@ fn main() {
         match MainMenu::select_menu(input) {
             Some(MainMenu::AddBill) => menu::add_bill(&mut bills),
             Some(MainMenu::ViewBill) => menu::view_bills(&bills),
+            Some(MainMenu::RemoveBill) => menu::remove_bills(&mut bills),
             None => return,
         }
         // Make a choice, based on user input
